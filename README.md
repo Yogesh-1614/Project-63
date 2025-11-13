@@ -20,5 +20,5 @@ Fill a brief description of this experiment here
 
 SrNo | Name | Faculty or Student | Department| Institute | Email id
 :--|:--|:--|:--|:--|:--|
-1 | . | . | . | . | .
+1 | Yogesh Singh | Student | Information Technology | REC Banda | yshah1491@gmail.com
 2 | . | . | . | . | .
