@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Newton's Rings – Animated Virtual Experiment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { margin:0; font-family: Arial, Helvetica, sans-serif; background:#0b1220; color:#e5e7eb; }
+    header { padding:14px 20px; background:#020617; border-bottom:1px solid #1f2933; }
+    header h1 { margin:0; font-size:1.4rem; }
+    header p { margin:4px 0 0; font-size:0.85rem; color:#9ca3af; }
+    main { display:grid; grid-template-columns:340px 1fr; gap:16px; padding:16px; }
+    .panel { background:#020617; border:1px solid #1f2933; border-radius:10px; padding:14px; }
+    label { display:block; font-size:0.85rem; margin-top:10px; color:#9ca3af; }
+    input { width:100%; margin-top:4px; padding:8px; background:#0b1220; border:1px solid #1f2933; border-radius:6px; color:#e5e7eb; }
+    button { margin-top:12px; width:100%; padding:10px; border-radius:8px; border:none; background:#22c55e; color:#022c22; font-weight:bold; cursor:pointer; }
+    canvas { width:100%; height:100%; background:#000; border-radius:10px; border:1px solid #1f2933; }
+    .result { margin-top:10px; padding:8px; background:#0b1220; border-radius:6px; border:1px solid #1f2933; font-size:0.9rem; }
+    @media (max-width:900px){ main{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Newton's Rings – Virtual Physics Experiment</h1>
+  <p>Ray animation followed by interference ring formation</p>
+</header>
+
+<main>
+  <div class="panel">
+    <label>Wavelength (nm)</label>
+    <input id="simLambda" type="number" value="589" />
+
+    <label>Radius of Curvature R (m)</label>
+    <input id="curvature" type="number" value="1" step="0.1" />
+
+    <label>Order of Ring (n)</label>
+    <input id="order" type="number" value="5" />
+
+    <label>Measured Radius r (m)</label>
+    <input id="radius" type="number" value="0.002" step="0.0001" />
+
+    <button onclick="runExperiment()">Run Experiment</button>
+
+    <div id="output" class="result">Observation will appear here.</div>
+  </div>
+
+  <div class="panel">
+    <canvas id="canvas" width="900" height="700"></canvas>
+  </div>
+</main>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  function drawSetup() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    ctx.fillStyle = '#facc15';
+    ctx.beginPath(); ctx.arc(450,80,10,0,2*Math.PI); ctx.fill();
+    ctx.fillText('Source',420,60);
+
+    ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(450,240,120,Math.PI,0); ctx.stroke();
+    ctx.fillText('Lens',420,250);
+
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(300,280); ctx.lineTo(600,280); ctx.stroke();
+
+    ctx.strokeStyle = '#64748b';
+    ctx.strokeRect(250,330,400,300);
+    ctx.fillText('Screen',430,650);
+  }
+
+  function animateRay(callback){
+    let y = 90;
+    function step(){
+      drawSetup();
+      ctx.strokeStyle = '#fde047'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(450,80); ctx.lineTo(450,y); ctx.stroke();
+      y += 5;
+      if(y < 330) requestAnimationFrame(step);
+      else callback();
+    }
+    step();
+  }
+
+  function animateRings(lambda,R){
+    const cx=450, cy=480, maxR=140;
+    let r=0;
+    function step(){
+      drawSetup();
+      for(let i=0;i<r;i++){
+        const phys = i/maxR*0.01;
+        const phase = (phys*phys)/(lambda*R);
+        const I = Math.cos(Math.PI*phase)**2;
+        const b = Math.min(255,I*255);
+        ctx.strokeStyle = `rgb(${b},${b},${b})`;
+        ctx.beginPath(); ctx.arc(cx,cy,i,0,2*Math.PI); ctx.stroke();
+      }
+      r+=2;
+      if(r<maxR) requestAnimationFrame(step);
+    }
+    step();
+  }
+
+  function runExperiment(){
+    const lambda = parseFloat(simLambda.value)*1e-9;
+    const R = parseFloat(curvature.value);
+    const r = parseFloat(radius.value);
+    const n = parseInt(order.value);
+
+    animateRay(()=>animateRings(lambda,R));
+
+    const calc = (r*r)/(n*R)*1e9;
+    output.innerHTML = `<b>Calculated Wavelength:</b> ${calc.toFixed(2)} nm`;
+  }
+
+  drawSetup();
+</script>
+
+</body>
+</html>
